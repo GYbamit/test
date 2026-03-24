@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<title>Task Assignment Shift Dashboard</title>
+<style>
+body{
+font-family:Arial;
+font-size:14px;
+background:#0f172a;
+color:white;
+margin:0;
+}
+header{
+background:#1e293b;
+padding:15px;
+text-align:center;
+font-size:20px;
+font-weight:bold;
+}
+.topbar{
+display:flex;
+justify-content:center;
+gap:40px;
+padding:10px;
+background:#020617;
+font-size:18px;
+}
+.dashboard{
+display:grid;
+grid-template-columns: 1fr 4fr 1fr;
+grid-template-rows: auto auto auto auto;
+gap:15px;
+padding:15px;
+
+}
+.panel{
+background:#1e293b;
+padding:15px;
+border-radius:8px;
+}
+h3{margin-top:0;}
+
+
+table {
+    width: 100%;
+    border-collapse: separate; /* IMPORTANT */
+    border-spacing: 0;         /* IMPORTANT */
+    margin-bottom: 5px;
+}
+
+th, td {
+    border: 1px solid #334155;
+    padding: 5px;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* remove double borders created by separate mode */
+td + td, th + th {
+    border-left-width: 0;
+}
+tr + tr td {
+    border-top-width: 0;
+}
+
+/* sticky header */
+th {
+    position: sticky;
+    top: 0;
+    background: #334155;
+    z-index: 5;
+}
+
+ 
+
+/* Column widths shared between Active and Completed tables */
+th.shift, td.shift { width: 6% !important; }
+th.timeRange, td.timeRange { width: 12% !important; }
+th.analyst, td.analyst { width: 15% !important; }
+th.category, td.category { width: 25% !important; }
+th.task, td.task { width: 25% !important;}       /* wider task column */
+th.status, td.status { width: 18%; !important;}
+th.actions, td.actions { width: 6%; !important}
+
+
+
+/* Optional: color for primary and secondary in active task */
+td.primary { font-weight: bold; background:#16a34a; }
+td.secondary { font-weight: bold; background:#facc15; color:black; }
+td.
+
+
+/* Buttons in actions */
+.actionBtn {
+ background: #94a3b8;
+ color: black;
+ border: none;
+ padding: 5px 8px;
+ border-radius: 4px;
+ cursor: pointer;
+ font-size: 12px;
+ white-space: nowrap;
+}
+
+
+
+#taskTable td.analyst{
+font-weight:bold;
+color:#e2e8f0;
+}
+
+#taskTable td.task{
+font-weight:bold;
+color:#e2e8f0;
+}
+
+.inProgressStatus{
+color:#2563eb;
+background:#ffffff;
+font-weight:bold;
+}
+.completedStatus{
+color:#2563eb;
+background:#ffffff;
+font-weight:bold;
+}
+
+th{background:#334155;}
+.primary{background:#16a34a;}
+.secondary{background:#facc15;color:black;}
+.chart{font-size:20px;text-align:center;}
+button{background:#2563eb;border:none;padding:8px;color:white;cursor:pointer;margin-top:5px;border-radius: 4px;transition:0.15s ease;}
+
+button:hover{
+filter:brightness(1.2);
+}
+select,input{margin-top:5px;width:100%;padding:6px;}
+.progressBar{
+width:100%;
+background:#334155;
+border-radius:5px;
+height:20px;
+margin-top:5px;
+}
+.progress{
+height:100%;
+background:#16a34a;
+width:0%;
+border-radius:5px;
+text-align:center;
+color:white;
+font-weight:bold;
+}
+
+.actionBtn{
+background:#94a3b8;
+color:black;
+border:none;
+padding:6px 10px;
+cursor:pointer;
+border-radius:4px;
+}
+
+
+.tableContainer{
+height:450px;   /* you can adjust this */
+overflow-y:auto;
+overflow-x:hidden;
+}
+
+
+.tableContainer2{
+height:200px;   /* you can adjust this */
+overflow-y:auto;
+overflow-x:hidden;
+}
+
+.overdueTask{
+background:#dc2626;
+color:white;
+font-weight:bold;
+}
+
+#shiftIndicator{
+letter-spacing:1px;
+}
+
+/* Dropdown button */
+
+.dropbtn {
+
+    width: 100%;
+
+    padding: 8px;
+
+    background: #ffffff;
+
+    color: #000000;
+
+    border: 1px solid #cbd5e1;
+
+    border-radius: 0px;
+
+    cursor: pointer;
+
+    text-align: left;
+
+    font-weight: 500;
+
+}
+
+/* Dropdown container */
+
+.dropdown {
+
+    position: relative;
+
+    width: 100%;
+
+}
+
+/* Dropdown list */
+
+.dropdown-content {
+
+    display: none;
+
+    position: absolute;
+
+    background: #ffffff;
+
+    color: #000000;
+
+    width: 100%;
+
+    max-height: 350px;
+
+    overflow-y: auto;
+
+    border: 1px solid #cbd5e1;
+
+    border-radius: 0px;
+
+    z-index: 10;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+
+}
+
+/* Show dropdown */
+
+.dropdown-content.show {
+
+    display: block;
+
+}
+
+/* Dropdown row */
+.dropdown-content label {
+   display: flex;
+   align-items: center;      /* vertical alignment */
+   justify-content: flex-start; /* ✅ LEFT ALIGN */
+   gap: 8px;
+   padding: 8px 12px;
+   cursor: pointer;
+   font-size: 13px;
+   text-align: left;
+}
+
+}
+
+/* Remove last border */
+
+.dropdown-content label:last-child {
+
+    border-bottom: none;
+
+}
+
+/* Hover */
+
+.dropdown-content label:hover {
+
+    background: #f8fafc;
+
+}
+
+/* Selected item */
+
+.dropdown-content input:checked + span {
+
+    font-weight: 600;
+
+    color: #2563eb;
+
+}
+
+/* Checkbox */
+
+.dropdown-content input {
+
+    cursor: pointer;
+
+}
+ 
+
+/* Checkbox fix */
+.dropdown-content input[type="checkbox"] {
+   width: 14px;
+   height: 14px;
+   margin: 0;                /* removes offset */
+   flex-shrink: 0;           /* prevents resizing */
+}
+
+
+/* Text */
+.dropdown-content span {
+   display: inline-block;
+   line-height: 1.2;
+   text-align: left;         /* ensure left */
+   flex: 1;                  /* keeps alignment consistent */
+}
+</style>
+</head>
+<body>
+<header>OPERATIONS CENTER SHIFT TASK DASHBOARD</header>
+<div class="topbar">
+<div><span id="clock"></span></div>
+</div>
+<div class="dashboard">
+<!-- Shift Task Assignment Panel -->
+<div class="panel">
+<h3>Shift Task Assignment</h3>
+<label>Shift</label>
+<select id="shift">
+<option value="" selected disabled>--Select Shift---</option>
+<option>Day</option>
+<option>Night</option>
+</select>
+<label>Name</label>
+<select id="person">
+<option value="" selected disabled>--Select Name---</option>
+<option>Anna Lynn</option>
+<option>Ceriaco</option>
+<option>Danica</option>
+<option>Gieroniemo</option>
+<option>Jake</option>
+<option>Jeremiah</option>
+<option>John Mick</option>
+<option>Jonnie Rey</option>
+<option>Joseph</option>
+<option>Joyce Ann</option>
+<option>Judylane</option>
+<option>Nelson</option>
+
+<option>Anyone</option>
+</select>
+<label>Category</label>
+<select id="category">
+<option value="" selected disabled>--Select Category---</option>
+<option>Primary</option>
+<option>Secondary</option>
+</select>
+
+
+
+<label>Task</label>
+<div class="dropdown">
+<button type="button" class="dropbtn" onclick="toggleDropdown()">
+       --Select Task---
+</button>
+<div class="dropdown-content" id="taskDropdown">
+
+<label><input type="checkbox" value="Zena-APAC-BPI"><span>Zena-BPI-APAC</span></label>
+<label><input type="checkbox" value="Zena-APAC-DB"><span>Zena-DB-APAC</span></label>
+<label><input type="checkbox" value="ZENA-APAC-BPI/DB"><span>ZENA-APAC-BPI/DB</span></label>
+<label><input type="checkbox" value="Zena-UK-BRD"><span>Zena-BRD-UK</span></label>
+<label><input type="checkbox" value="Zena-UK-SWM"><span>Zena-SWM-UK</span></label>
+<label><input type="checkbox" value="Zena-UK-RBK"><span>Zena-RBK-UK</span></label>
+<label><input type="checkbox" value="ZENA-UK-BRD/RBK/SWM"><span>ZENA-UK-BRD/RBK/SWM</span></label>
+
+
+<label><input type="checkbox" value="CMTT-Plastiq"><span>CMTT-Plastiq</span></label>
+<label><input type="checkbox" value="PowerBroker"><span>PowerBroker</span></label>
+<label><input type="checkbox" value="Pagerduty"><span>Pagerduty</span></label>
+<label><input type="checkbox" value="Phishing"><span>Phishing</span></label>
+<label><input type="checkbox" value="Turnover"><span>Turnover</span></label>
+<label><input type="checkbox" value="BPI UA-BPIAC2 EOD & Intraday"><span>BPI UA-BPIAC2 EOD & Intraday</span></label>
+<label><input type="checkbox" value="DB UAT-DBAACC EOD & Intraday"><span>DB UAT-DBAACC EOD & Intraday</span></label>
+<label><input type="checkbox" value="DB UAT Error/Batch Report"><span>DB UAT Error/Batch Report</span></label>
+<label><input type="checkbox" value="DB Production EOD Run Generation"><span>DB Production EOD Run Generation</span></label>
+<label><input type="checkbox" value="DB Production EOD Run Report"><span>DB Production EOD Run Report</span></label>
+<label><input type="checkbox" value="BRD EOD Report"><span>BRD EOD Report</span></label>
+<label><input type="checkbox" value="DRBK EOD Report"><span>RBK EOD Report</span></label>
+<label><input type="checkbox" value="SWM EOD Report"><span>SWM EOD Report</span></label>
+<label><input type="checkbox" value="House Keeping "><span>House Keeping</span></label>
+<label><input type="checkbox" value="Documentations"><span>Documentations</span></label>
+<label><input type="checkbox" value="All System<"><span>All System</span></label>
+
+</div>
+</div>
+
+
+<label>Time Range</label>
+<select id="timeRange">
+<option value="" selected disabled>--Select Time--</option>
+<option>1-4 hrs</option>
+<option>4-8 hrs</option>
+<option>8-12 hrs</option>
+<option>Whole Day</option>
+<option>N/A</option>
+</select>
+<br><br>
+<button id="assignBtn" onclick="addTask()">Assign</button>
+<button onclick="rotateTasks()">Rotate Tasks</button>
+<button onclick="clearShift()">End Shift</button>
+<button onclick="downloadExcel()">Generate Report</button>
+</div>
+
+
+
+<!-- Active Task Table Panel -->
+<div class="panel">
+<h3>Active Tasks</h3>
+
+<div class="tableContainer">
+<table id="taskTable" class="taskTable">
+<tr>
+<th class="shift">Shift</th>
+<th class="timeRange">Time Range</th>
+<th class="analyst">Assigned</th>
+<th class="category">Category</th>
+<th class="task">Task</th>
+<th class="status">Status</th>
+<th class="actions">Actions</th>
+</tr>
+</table>
+</div>
+</div>
+
+<!-- Shift Workload Panel -->
+<div class="panel">
+<h3>Shift Workload</h3>
+<div>📌 Active Tasks: <span id="activeTasks">0</span></div>
+<div>✅ Completed Tasks: <span id="completedTasks">0</span></div>
+<div>📊 Total Tasks: <span id="totalTasks">0</span></div>
+<div>🚨 Overdue Tasks: <span id="overdueTasks">0</span></div>
+<div class="progressBar"><div class="progress" id="progressBar">0%</div></div>
+<br>
+
+<h3>Currently on Shift</h3>
+<div id="shiftIndicator" style="
+font-weight:bold;
+font-size:16px;
+margin-bottom:10px;
+text-align:left;
+padding:6px;
+border-radius:6px;
+">
+</div>
+<br>
+<h3>Active Task Name Count</h3>
+<div id="taskSummary"></div>
+</div>
+
+<!-- Primary Engineers Panel -->
+<div class="panel">
+<h3>🟢 Primary</h3>
+<div id="primaryList"></div>
+</div>
+
+
+<!-- Completed Task Table Panel -->
+<div class="panel">
+<h3>Completed Tasks</h3>
+
+<div class="tableContainer2">
+<table id="completedTable" class="taskTable">
+<tr>
+<th class="shift">Shift</th>
+<th class="timeRange">Time Range</th>
+<th class="analyst">Assigned</th>
+<th class="category">Category</th>
+<th class="task">Task</th>
+<th class="status">Status</th>
+<th class="actions">Actions</th>
+</tr>
+</table>
+</div>
+</div>
+<!-- Secondary Engineers Panel -->
+<div class="panel">
+<h3>🟡 Secondary </h3>
+<div id="secondaryList"></div>
+</div>
+
+<script>
+// Load tasks from localStorage
+let tasks = JSON.parse(localStorage.getItem("activeTasks")) || [];
+let completedTasks = JSON.parse(localStorage.getItem("completedTasks")) || [];
+function saveTasks(){
+   localStorage.setItem("activeTasks", JSON.stringify(tasks));
+   localStorage.setItem("completedTasks", JSON.stringify(completedTasks));
+}
+
+function addTask() {
+   let shift = document.getElementById("shift").value;
+   let person = document.getElementById("person").value;
+   let category = document.getElementById("category").value;
+   let timeRange = document.getElementById("timeRange").value;
+   // ✅ Get selected tasks from checkbox dropdown
+   let selectedTasks = Array.from(
+       document.querySelectorAll('#taskDropdown input:checked')
+   ).map(cb => cb.value);
+   // =========================
+   // ❌ REQUIRED FIELD VALIDATION
+   // =========================
+   if (!shift || !person || !category || !timeRange || selectedTasks.length === 0) {
+       alert("❌ Please complete all fields and select at least one task.");
+       return;
+   }
+   let addedCount = 0;
+   let skipped = [];
+   // =========================
+   // 🔁 LOOP EACH TASK
+   // =========================
+   selectedTasks.forEach(task => {
+       // =========================
+       // 🚫 DUPLICATE VALIDATION
+       // =========================
+       if (person !== "Anyone") {
+           // ❌ Same person + task + time + shift
+           let duplicatePerson = tasks.concat(completedTasks).some(t =>
+               t.person === person &&
+               t.task === task &&
+               t.timeRange === timeRange &&
+               t.shift === shift
+           );
+           if (duplicatePerson) {
+               skipped.push(`${task} (duplicate person)`);
+               return;
+           }
+           // ❌ Same task + category + time + shift
+           let duplicateTaskCategory = tasks.concat(completedTasks).some(t =>
+               t.task === task &&
+               t.category === category &&
+               t.timeRange === timeRange &&
+               t.shift === shift
+           );
+           if (duplicateTaskCategory) {
+               skipped.push(`${task} (duplicate category)`);
+               return;
+           }
+       }
+       // =========================
+       // ⚠ SECONDARY NEEDS PRIMARY
+       // =========================
+       if (category === "Secondary" && person !== "Anyone") {
+           let hasPrimary = tasks.some(t =>
+               t.task === task &&
+               t.category === "Primary" &&
+               t.timeRange === timeRange &&
+               t.shift === shift
+           );
+           if (!hasPrimary) {
+               skipped.push(`${task} (no primary assigned)`);
+               return;
+           }
+       }
+       // =========================
+       // ✅ ADD TASK
+       // =========================
+       tasks.push({
+           shift,
+           person,
+           category,
+           task,
+           status: "In Progress",
+           timeRange,
+           startTime: Date.now(),
+           isOverdue: false
+       });
+       addedCount++;
+   });
+   // =========================
+   // 💾 SAVE + RENDER
+   // =========================
+   saveTasks();
+   render();
+   // =========================
+   // 🔄 RESET CHECKBOXES
+   // =========================
+   document.querySelectorAll('#taskDropdown input').forEach(cb => cb.checked = false);
+   document.querySelector('.dropbtn').innerText = "--Select Task---";
+   // =========================
+   // 📢 FEEDBACK MESSAGE
+   // =========================
+   if (addedCount > 0 && skipped.length === 0) {
+       alert(`✅ ${addedCount} task(s) successfully assigned.`);
+   }
+   if (addedCount > 0 && skipped.length > 0) {
+       alert(`⚠ ${addedCount} task(s) added.\n❌ Skipped:\n- ${skipped.join("\n- ")}`);
+   }
+   if (addedCount === 0) {
+       alert(`❌ No tasks added.\nIssues:\n- ${skipped.join("\n- ")}`);
+   }
+}
+
+function render() {
+
+    let taskCounts = {};
+    let overdueCount = 0;
+
+    let table = document.getElementById("taskTable");
+
+    let completedTable = document.getElementById("completedTable");
+
+    table.innerHTML = "<tr><th>Shift</th><th>Time Range</th><th>Assigned</th><th>Category</th><th>Task</th><th>Status</th><th>Edit</th></tr>";
+
+    completedTable.innerHTML = "<tr><th>Shift</th><th>Time Range</th><th>Assigned</th><th>Category</th><th>Task</th><th>Status</th><th>Edit</th></tr>";
+
+    let primary = "";
+
+    let secondary = "";
+
+    // Active tasks
+
+    tasks.forEach((t,index)=>{
+if(!taskCounts[t.task]) taskCounts[t.task] = 0;
+taskCounts[t.task]++;
+
+if(t.isOverdue){
+overdueCount++;
+}
+   let row = table.insertRow();
+row.innerHTML = `
+<td class="shift">${t.shift}</td>
+<td class="timeRange">${t.timeRange}</td>
+<td class="analyst">${t.person}</td>
+<td class="category ${t.category.toLowerCase()}">${t.category}</td>
+<td class="task ${t.isOverdue ? 'overdueTask' : ''}">${t.task}</td>
+ <td class="status">
+<select class="${t.status === 'In Progress' ? 'inProgressStatus' : 'completedStatus'}"
+onchange="updateStatus(${index}, this.value)">
+<option ${t.status=="In Progress"?"selected":""}>🔵 In Progress</option>
+<option ${t.status=="Completed"?"selected":""}>✅ Completed</option>
+ 
+</select>
+</td>
+<td class="actions">
+<button class="actionBtn" onclick="removeTask(${index})">Remove</button>
+</td>
+`;
+   if(t.category=="Primary") primary += t.person+" - "+t.task+" ("+t.timeRange+")<br>";
+   if(t.category=="Secondary") secondary += t.person+" - "+t.task+" ("+t.timeRange+")<br>";
+});
+
+    // Completed tasks
+
+    completedTasks.forEach((t, idx)=>{
+   let row = completedTable.insertRow();
+row.innerHTML = `
+<td class="shift">${t.shift}</td>
+<td class="timeRange">${t.timeRange}</td>
+<td class="analyst">${t.person}</td>
+<td class="category">${t.category}</td>
+<td class="task">${t.task}</td>
+<td class="status">${t.status}</td>
+<td class="actions">
+<button class="actionBtn" onclick="undoTask(${idx})">Undo</button>
+</td>
+`;
+});
+
+
+    document.getElementById("primaryList").innerHTML = primary;
+
+    document.getElementById("secondaryList").innerHTML = secondary;
+
+    // Update workload numbers
+
+    document.getElementById("activeTasks").innerText = tasks.length;
+
+    document.getElementById("completedTasks").innerText = completedTasks.length;
+
+    document.getElementById("totalTasks").innerText = tasks.length + completedTasks.length;
+    document.getElementById("overdueTasks").innerText = overdueCount;
+
+    // Update progress bar
+
+    let percent = (tasks.length + completedTasks.length) > 0 ? Math.round((completedTasks.length / (tasks.length + completedTasks.length)) * 100) : 0;
+
+    document.getElementById("progressBar").style.width = percent + "%";
+
+    document.getElementById("progressBar").innerText = percent + "%";
+
+let summaryHTML = "";
+for(let taskName in taskCounts){
+summaryHTML += taskName + ": " + taskCounts[taskName] + "<br>";
+}
+document.getElementById("taskSummary").innerHTML = summaryHTML;
+
+}
+ 
+function removeTask(index){
+  if(confirm("Are you sure you want to remove this task?")){
+      tasks.splice(index,1);
+      saveTasks();
+      render();
+  }
+}
+
+
+
+function updateStatus(index,value){
+tasks[index].status = value;
+if(value=="✅ Completed"){
+tasks[index].completedAt = new Date().toLocaleString();
+let completedTask = {...tasks[index], originalCategory: tasks[index].category};
+completedTasks.unshift(completedTask);
+tasks.splice(index,1);
+}
+saveTasks();
+render();
+}
+
+
+function undoTask(idx){
+   if(confirm("Are you sure you want to undo this task? It will return to Active Tasks.")){
+       let task = completedTasks[idx];
+       // Restore category color
+       task.category = task.originalCategory || task.category;
+       tasks.push(task); // back to active tasks
+       completedTasks.splice(idx,1);
+       saveTasks();
+       render();
+   }
+}
+
+ 
+function rotateTasks(){
+if(tasks.length>0){
+tasks.push(tasks.shift());
+saveTasks();
+render();
+}
+}
+function clearShift(){
+   if(confirm("Are you sure you want to end the shift? All tasks will be cleared.")){
+       tasks=[];
+       completedTasks=[];
+       localStorage.removeItem("activeTasks");
+       localStorage.removeItem("completedTasks");
+       render();
+   }
+}
+
+function validateFields() {
+   let shift = document.getElementById("shift").value;
+   let person = document.getElementById("person").value;
+   let category = document.getElementById("category").value;
+   let task = document.getElementById("task").value;
+   let timeRange = document.getElementById("timeRange").value;
+   let button = document.getElementById("assignBtn");
+   if(shift && person && category && task && timeRange){
+       button.disabled = false;
+   } else {
+       button.disabled = true;
+   }
+}
+
+
+
+
+function removeTask(index){
+   if(confirm("Are you sure you want to remove this task?")){
+       tasks.splice(index,1);
+       saveTasks();
+       render();
+   }
+}
+
+function updateClock(){
+   let now = new Date();
+   let options = {
+       weekday: 'long',
+       year: 'numeric',
+       month: 'long',
+       day: 'numeric',
+       hour: 'numeric',
+       minute: 'numeric',
+       second: 'numeric',
+       hour12: true
+   };
+   document.getElementById("clock").innerText = now.toLocaleString('en-US', options);
+}
+
+setInterval(updateClock, 1000);
+// Render on page load
+render();
+// Run overdue checker immediately
+checkOverdueTasks();
+// Run overdue checker every minute
+setInterval(checkOverdueTasks, 60000);
+
+function undoTask(index){
+if(confirm("Return this task to Active Tasks?")){
+let task = completedTasks[index];
+task.status = "In Progress";
+delete task.completedAt;
+tasks.push(task);
+completedTasks.splice(index,1);
+saveTasks();
+render();
+}
+}
+
+function checkOverdueTasks(){
+tasks.forEach(t=>{
+let limitHours = 0;
+if(t.timeRange === "1-4 hrs") limitHours = 4;
+if(t.timeRange === "4-8 hrs") limitHours = 8;
+if(t.timeRange === "8-12 hrs") limitHours = 12;
+if(t.timeRange === "Whole Day") limitHours = 24;
+if(t.timeRange === "N/A") limitHours = 0.05;
+let elapsedHours = (Date.now() - t.startTime) / (1000*60*60);
+t.isOverdue = elapsedHours > limitHours;
+});
+render();
+}
+
+
+function updateShiftIndicator(){
+// Get Philippine time
+let now = new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" });
+let phTime = new Date(now);
+let hour = phTime.getHours();
+let indicator = document.getElementById("shiftIndicator");
+let shiftDropdown = document.getElementById("shift");
+// Determine shift
+if(hour >= 7 && hour < 19){
+indicator.innerHTML = "☀️ DAY (7AM - 7PM)";
+indicator.style.color = "#facc15";
+// Optional: auto-select dropdown
+if(shiftDropdown) shiftDropdown.value = "Day";
+}else{
+indicator.innerHTML = "🌙 NIGHT (7PM - 7AM)";
+indicator.style.color = "#38bdf8";
+// Optional: auto-select dropdown
+if(shiftDropdown) shiftDropdown.value = "Night";
+}
+}
+
+
+updateShiftIndicator(); // run immediately
+setInterval(updateShiftIndicator, 60000); // update every minute
+
+function downloadExcel(){
+if(completedTasks.length === 0){
+alert("No completed tasks to export.");
+return;
+}
+let csv = "Date,Shift,Time Range,Analyst,Category,Task,Completed At\n";
+completedTasks.forEach(t=>{
+csv += `${new Date().toLocaleDateString()},${t.shift},${t.timeRange},${t.person},${t.category},${t.task},${t.completedAt}\n`;
+});
+// Generate filename with date + time
+let now = new Date();
+let date = now.toISOString().split("T")[0];
+let time = now.toTimeString().split(" ")[0].replace(/:/g,"-");
+// Optional: include shift in filename
+let shift = document.getElementById("shift").value || "Shift";
+let filename = `Completed_Tasks_${date}_${time}_${shift}.csv`;
+let blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+let link = document.createElement("a");
+link.href = URL.createObjectURL(blob);
+link.download = filename;
+link.click();
+}
+
+// Toggle dropdown
+function toggleDropdown(){
+   document.getElementById("taskDropdown").classList.toggle("show");
+}
+// Close dropdown when clicking outside
+window.onclick = function(e){
+   if(!e.target.matches('.dropbtn')){
+       let dropdown = document.getElementById("taskDropdown");
+       if(dropdown.classList.contains("show")){
+           dropdown.classList.remove("show");
+       }
+   }
+}
+// Show selected tasks in button
+document.querySelectorAll('#taskDropdown input').forEach(cb => {
+   cb.addEventListener('change', () => {
+       let selected = Array.from(document.querySelectorAll('#taskDropdown input:checked'))
+           .map(c => c.value);
+       document.querySelector('.dropbtn').innerText =
+           selected.length ? selected.join(', ') : "--Select Task---";
+   });
+});
+
+</script>
+</body>
+</html>
